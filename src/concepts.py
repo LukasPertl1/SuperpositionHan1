@@ -468,6 +468,36 @@ class ConceptSet:
                 row.append(concept_mask.node_mask)
             mat.append(torch.cat(row).unsqueeze(0))
         return torch.cat(mat)
+    
+    ##############
+    ### ADDED ####
+    ##############
+
+    def graph_wide_mask(self, concept_name):
+        """
+        Given a single concept name, returns a concatenated node mask (tensor)
+        for that concept across all graphs in the ConceptSet.
+
+        :param concept_name: The name of the concept (string) for which to get the mask.
+        :return: A tensor representing the mask over all nodes across all graphs,
+                 where each entry is 1 if the node is active for the concept, 0 otherwise.
+        """
+        mask_list = []
+        # Retrieve the dictionary of graph-indexed masks for the concept.
+        concept_masks = self.base_concepts[concept_name][1]
+        
+        # Iterate over all graphs (sorted by graph index for consistency) and collect node masks.
+        for graph_idx in sorted(concept_masks.keys()):
+            mask_list.append(concept_masks[graph_idx].node_mask)
+        
+        # Concatenate the node masks from all graphs into a single tensor.
+        full_mask = torch.cat(mask_list)
+        return full_mask
+    
+    ##############
+    ### END ######
+    ##############
+
 
     def match(self, neuron_activations, norm, inds):
         """
